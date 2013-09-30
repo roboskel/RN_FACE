@@ -1,0 +1,8 @@
+RN_FACE
+
+A face detection and tracking ROS node written by SKEL for Researcher's Night 2013. It presents an improvement on using simple OpenCV
+face detection (which utilizes Haar cascades) by integrating the head coordinates of each person in front of the camera provided by
+the Microsoft Kinect mounted on Sek's mast. By using the OpenNI libraries the program is used to limit the search area in the approximate
+area of each user's head, increasing overall accuracy and limiting the lighting and enviroment effects. The package consists of the following nodes :
+
+

@@ -1,0 +1,14 @@
+<launch>
+	<node name="cap_img_d" pkg="rn_face" type="cap_img_d" required="true" output="screen"/>
+	
+	<node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" required="true" output="screen"/>
+	
+	<node name="hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" required="true" output="screen">
+	<param name="intensity" type="bool" value="true"/>
+	</node>
+
+	<node name="trans_skel" pkg="rn_face" type="trans_skel" required="true" />
+	
+	<node pkg="rosbag" type="record" name="recordings"
+       args="record -O rec_bag /tf /head_cords /img_addr /scan /coms /camera/depth/image" />
+</launch>

@@ -1,0 +1,16 @@
+<launch>
+	<node name="fdc2" pkg="rn_face" type="fdc2" respawn="true" output="screen"/>
+	
+	<node name="fdati" pkg="rn_face" type="fdati" required="true"/>
+	
+	<node name="image_view" pkg="image_view" type="image_view" args="image:=/camera/depth/image" required="true" output="screen">
+	<param name="window_name" value="Depth Imaging"/>
+	</node>
+	
+	<node name="cap_img_d" pkg="rn_face" type="cap_img_d" required="true" output="screen"/>
+	
+	<node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" required="true" output="screen"/>
+
+	<node name="trans_skel" pkg="rn_face" type="trans_skel" required="true" />
+
+</launch>
