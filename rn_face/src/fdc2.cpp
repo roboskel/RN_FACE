@@ -1,6 +1,5 @@
 // g++ `pkg-config --cflags opencv`   `pkg-config --libs opencv` face_detection_and_tracking.cpp -o face_detection_and_tracking
 #include <stdlib.h>
-
 #include <stdio.h>
 #include <time.h>
 #include <iostream>
@@ -8,21 +7,18 @@
 #include <fstream>
 #include <math.h>
 #include <cmath>
-#include <ros/ros.h>
+
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-
-
+//#include "opencv2/cv.h"
 #include "cv.h"
-#include "highgui.h"
+#include <opencv2/imgproc/imgproc.hpp> 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+
 #include <stdio.h>
 #include <ctype.h>
 
@@ -30,10 +26,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <ros/ros.h>
 #include "std_msgs/Float64MultiArray.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Int64.h"
 #include "std_msgs/Int32.h"
+#include <sensor_msgs/image_encodings.h>
 #include "rn_face/head_cords_m.h"
 #include "rn_face/head_cords_m_array.h"
 
@@ -132,11 +130,16 @@ struct face_{
 	float hranges_arr[2];// = {0,500};
 	float* hranges ;//= hranges_arr;
 	float max_val;
+	//double head_stick[2];
+	//double head_stick_before_occlusion[2];
 	double head_stick;
 	double head_stick_before_occlusion;
 	double x,y,z;
 	double x_prev,y_prev,z_prev;
 	bool image_created;
+	//toy alex dhlwnontan sth main
+	//pleon melos tis domhs
+	//char number[10],id[2],x[10],y[10],z[10];
 	CvPoint origin;
 	CvRect selection;
 	CvRect track_window;
@@ -149,7 +152,7 @@ struct face_{
 	face_():number(9),image(0),hsv(0),hue(0),mask(0),backproject(0),histimg(0),backproject_mode(0),select_object(0),track_object(0),
 	show_hist(1),hdims(42),detected(0),occlusion(1),count_occlusion(0),
 	vmin(40),vmax(256),smin(90),id_(-1),fid(0)/*,x_(0),y_(0),z_(0)*/,x(0),y(0),z(0),x_prev(0),z_prev(0),y_prev(0),
-	hranges_arr({0,500}),hranges(hranges_arr),max_val(0),head_stick(0),head_stick_before_occlusion(0),image_created(FALSE){}/*head_stick({0,0}),head_stick_before_occlusion({0,0})*/
+	hranges_arr({0,500}),hranges(hranges_arr),max_val(0),head_stick(0),head_stick_before_occlusion(0),image_created(false){}/*head_stick({0,0}),head_stick_before_occlusion({0,0})*/
 };
 
 face *Faces = new face[10];
@@ -210,6 +213,9 @@ void box_area(double x,double y, double z,int &py, int &pz, int &width, int &hei
 	}
 	width = WIDTH;
 	height = HEIGHT;
+	//printf("TempY = %f\nTempZ = %f\n",tempy,tempz);
+	//printf("SkelY = %f\nSkelZ = %f\n",y,z);
+	//printf("X = %d\nY = %d\nW = %d\nH = %d\n\n",py,pz,width,height);
 	return ;
 }
 IplImage* crop( IplImage* src,  CvRect roi)
@@ -217,7 +223,10 @@ IplImage* crop( IplImage* src,  CvRect roi)
 	cvSetImageROI( src, roi );
 	// Must have dimensions of output image
 	IplImage* cropped = cvCreateImage( cvGetSize(src)/*roi.width,roi.height*/, 8, 3 );
-	// Say what the source region is	// Do the copy
+	//cropped->origin=src->origin;
+	// Say what the source region is
+	//cvSetImageROI( src, roi );
+	// Do the copy
 	//ROS_INFO("COPYING");
 	cvCopy( src, cropped );
 	//ROS_INFO("COPIED");
@@ -226,7 +235,13 @@ IplImage* crop( IplImage* src,  CvRect roi)
 	return cropped;
 }
 
-
+void set_factors(double factors[])
+{	
+	//calculate y factor
+	factors[0] = 320/(DISTANCE*(sin(28.5*PI/180))/sin(61.5*PI/180));
+	//calculate z factor
+	factors[1] = 240/(DISTANCE*(sin(21.5*PI/180))/sin(68.5*PI/180));
+}
 void no_faces_cb(const std_msgs::Int64::ConstPtr& msg)
 {
 	//ROS_INFO("SET NO_FACES");
@@ -243,7 +258,12 @@ void skelCallback(const rn_face::head_cords_m_array::ConstPtr& msg,struct face_ 
 {	
 	//ROS_INFO("READING STICK DATA");
 	NO_FACES = msg->no_faces;
-
+	//if (NO_FACES != PREV_NO_FACES)
+	//{
+	//	PREV_NO_FACES = NO_FACES ;
+		//detected=0;
+		//ros::Duration(0.5).sleep();
+	//}
 	if (NO_FACES > MAX_PERSONS)
 	{
 		MAX_PERSONS = NO_FACES;
@@ -253,7 +273,7 @@ void skelCallback(const rn_face::head_cords_m_array::ConstPtr& msg,struct face_ 
 		const rn_face::head_cords_m &data = msg->head_co[i];
 		if (face_sa[i].x==0)
 		{
-			face_sa[i].detected = 0;
+			face_sa[i].detected = 0;  
 		}
 		face_sa[i].x_prev = face_sa[i].x;
 		face_sa[i].y_prev = face_sa[i].y;
@@ -290,8 +310,6 @@ int main( int argc, char** argv )
 		DISTANCE = atof(argv[2]);
 	}
 	else {SESSION_MAX=1;}
-	//Hardcoded gia dokimes
-	//SESSION_MAX=6;
 	NO_FACES=2;
 	SPEAKER_ID=1;
 	int c;
@@ -309,7 +327,6 @@ int main( int argc, char** argv )
 	{
 		face_sa[c].fid=c;
 	}
-	//printf("Persons Tracked : %d\n",SESSION_MAX);
 	//ROS
 	ros::init(argc, argv, "fdati_crop");
     ros::NodeHandle n;
@@ -374,6 +391,7 @@ int main( int argc, char** argv )
 							{flip( frame, frameCopy, 0 );}
 							//ROS_INFO("SHOWING");
 					cvShowImage("Enhanced Face Detection & Tracking",iplImg);
+					//cvReleaseImage(&img);
 					cvWaitKey(10);
 				}
 
@@ -388,24 +406,26 @@ int main( int argc, char** argv )
 			{
 				//ROS_INFO("CREATED IPL IMG");	
 				//ROS_INFO("INITILIAZING HUES ETC");
+				//for(c=0;c<NO_FACES;c++)
 				for(c=0;c<MAX_PERSONS;c++)
 				{	
 					//printf("\nC = %d\n",c);	
 					//ROS_INFO("#1");
 					if (face_sa[c].x!=0)
 					{
-						if(face_sa[c].image_created==FALSE)
+						if(face_sa[c].image_created==false)
 						{
 							sprintf(head,"Face_%d",c+1);
 							cvNamedWindow(head,1);
 							cvMoveWindow (head,(180*c),530);
 							strcpy(head,"Face_");
-							face_sa[c].image_created = TRUE; 
+							face_sa[c].image_created = true; 
 						}
 						box_area(face_sa[c].x, face_sa[c].y, face_sa[c].z,/*factors,*/
 								face_sa[c].box_area.x, face_sa[c].box_area.y,
 								face_sa[c].box_area.width, face_sa[c].box_area.height);
-						face_sa[c].image=crop(iplImg,face_sa[c].box_area);
+						//ros::Duration(100).sleep();
+						face_sa[c].image=crop(iplImg,/*cvRect((640/NO_FACES)*c,0,640/NO_FACES,cut_height)*/face_sa[c].box_area);
 						//ROS_INFO("#2");
 						face_sa[c].frame = face_sa[c].image;
 						if( face_sa[c].frame.empty() )
@@ -433,7 +453,7 @@ int main( int argc, char** argv )
 						cvZero( face_sa[c].histimg );
 						//ROS_INFO("#10");
 						cvCvtColor(face_sa[c].image, face_sa[c].hsv, CV_BGR2HSV );
-						if(face_sa[c].image_created == TRUE)
+						if(face_sa[c].image_created == true)
 						{
 							//ROS_INFO("#11");
 							sprintf(head,"Face_%d",c+1);
@@ -442,19 +462,7 @@ int main( int argc, char** argv )
 							cvWaitKey(10);
 						}
 					}
-					else
-					{
-						if(face_sa[c].image_created == TRUE)
-						{
-							sprintf(head,"Face_%d",c+1);
-							cvDestroyWindow(head);
-							strcpy(head,"Face_");
-							cvWaitKey(10);
-							face_sa[c].image_created = FALSE;
-						}
-					}
-					
-		}
+        	}
 		//ROS_INFO("INITILIAZED HUES ETC");
 		if (sum != NO_FACES)
 		{	
@@ -496,9 +504,13 @@ int main( int argc, char** argv )
 				sum++;
 			}
 		}
+		
+		//ROS_INFO("GIATI DE MPAINEIS EDW MESA ?");
 		if (sum>0)
 		{  	
+			//sum=0;
 			//ROS_INFO("MPHKE");
+			//for (c=0;c<NO_FACES;c++)
 			for (c=0;c<MAX_PERSONS;c++)
 			{
 				if(face_sa[c].detected==1)
@@ -515,10 +527,13 @@ int main( int argc, char** argv )
 					if(face_sa[c].track_object<0)
 					{	
 						//ROS_INFO("IN TRACK LOOP");
+						//face_sa[c].max_val = 0.f;
 						_max_val[c] = 0.f;
 						//ROS_INFO("SET IMAGE ROI");
 						cvSetImageROI( face_sa[c].hue, face_sa[c].selection );
 						cvSetImageROI( face_sa[c].mask, face_sa[c].selection );
+						//printf("%d ")
+						//ros::Duration(5).sleep();
 						//ROS_INFO("CALC HIST");
 						cvCalcHist( &face_sa[c].hue, face_sa[c].hist, 0, face_sa[c].mask );
 						//ROS_INFO("GETMINMAX");
@@ -530,10 +545,13 @@ int main( int argc, char** argv )
 						cvResetImageROI( face_sa[c].mask );
 						//ROS_INFO("MOVING IMAGE");
 						//MOVE SELECTION BOX TO ORIGINAL IMAGE
+						//(640/NO_FACES)*c,0,640/NO_FACES,cut_height));
 						//ROS_INFO("C = %d",c);
+						//face_sa[c].selection = cvRect(Faces[c].x-Faces[c].r/*+(640/NO_FACES)*c*/,Faces[c].y-Faces[c].r, 
 						face_sa[c].track_window = face_sa[c].selection;
 						//ROS_INFO("track_window_%d-------------%d %d %d %d",c,face_sa[c].track_window.x, face_sa[c].track_window.y,
 						//face_sa[c].track_window.width, face_sa[c].track_window.height);
+						
 						face_sa[c].track_object = 1;
 						cvZero( face_sa[c].histimg );
 						face_sa[c].bin_w = face_sa[c].histimg->width / face_sa[c].hdims;
@@ -577,14 +595,17 @@ int main( int argc, char** argv )
 					//ROS_INFO("AFTER IFS");
 				}
 			}
+				
+			//ros::Duration(3).sleep();
 			//for(c=0;c<NO_FACES;c++)
 			for(c=0;c<MAX_PERSONS;c++)
 			{	
 				if((face_sa[c].detected==1)&&(face_sa[c].x!=0))
 				{
 					face_sa[c].new_center = face_sa[c].track_box.center;
-					face_sa[c].new_center.x = face_sa[c].box_area.x + face_sa[c].track_box.center.x;
-					face_sa[c].new_center.y = face_sa[c].box_area.y + face_sa[c].track_box.center.y;
+					face_sa[c].new_center.x = face_sa[c].box_area.x + face_sa[c].track_box.center.x/*face_sa[c].box_area.width/2*/;
+					face_sa[c].new_center.y = face_sa[c].box_area.y + face_sa[c].track_box.center.y/*face_sa[c].box_area.height/2*/;
+					//face_sa[c].new_center.y = face_sa[c].track_box.center.x + (640/NO_FACES)*c  ;
 					face_sa[c].tb2.center = face_sa[c].new_center;
 					face_sa[c].tb2.size.width = face_sa[c].track_box.size.width+5;
 					face_sa[c].tb2.size.height = face_sa[c].track_box.size.height+5;
@@ -601,7 +622,11 @@ int main( int argc, char** argv )
 						if(flashing==1)
 						{	
 							//ROS_INFO("POINT #1");
-							cvEllipseBox( iplImg , face_sa[c].tb2, ,
+							//cvEllipseBox(face_sa[c].image,face_sa[c].track_box,
+							cvEllipseBox( iplImg /*face_sa[c].image*/, face_sa[c].tb2, 
+							//cvCircle(iplImg,cvPointFrom32f(face_sa[c].tb2.center),
+							//static_cast<int>(sqrt((pow(2,face_sa[c].tb2.size.width/2)) +
+							//(pow(2,face_sa[c].tb2.size.height/2)))+0.5),
 							CV_RGB(rgb_map_.rgb_ar[Faces[c].fid-1][0],rgb_map_.rgb_ar[Faces[c].fid-1][1],
 									rgb_map_.rgb_ar[Faces[c].fid-1][2]), 3, CV_AA, 0 );
 							flashing=-flashing;
@@ -614,7 +639,11 @@ int main( int argc, char** argv )
 					else
 					{	
 						//ROS_INFO("POINT #2");
+						//cvEllipseBox(face_sa[c].image,face_sa[c].track_box,
 						cvEllipseBox(iplImg,face_sa[c].tb2,
+						//cvCircle(iplImg,cvPointFrom32f(face_sa[c].tb2.center),
+						//	static_cast<int>(sqrt((pow(2,face_sa[c].tb2.size.width/2)) +
+						//	(pow(2,face_sa[c].tb2.size.height/2)))+0.5),
 						CV_RGB(rgb_map_.rgb_ar[Faces[c].fid-1][0],rgb_map_.rgb_ar[Faces[c].fid-1][1],
 							rgb_map_.rgb_ar[Faces[c].fid-1][2]), 3, CV_AA, 0 );
 					}
@@ -623,10 +652,22 @@ int main( int argc, char** argv )
 					strcpy(head,"Face_");
 					cvWaitKey(1);
 				}
-/
+				/*
+				else
+				{
+					if(face_sa[c].image_created == TRUE)
+					{
+						sprintf(head,"Face_%d",c+1);
+						cvDestroyWindow(head);
+						strcpy(head,"Face_");
+						cvWaitKey(10);
+						face_sa[c].image_created = FALSE;
+					}
+				}
+				*/
 			}
 			//ros::Duration(10).sleep();
-			
+			//cvCircle(iplImg,cvPoint(100,100),10,CV_RGB(rgb_map_.rgb_ar[Faces[c].fid-1][0],rgb_map_.rgb_ar[Faces[c].fid-1][1],rgb_map_.rgb_ar[Faces[c].fid-1][2]),1,8,0);
 			cvShowImage( "Enhanced Face Detection & Tracking", iplImg);
 			cvWaitKey(1); // o xronos gia kathe frame
 			//------------------------ press a key -----------------------
@@ -714,14 +755,15 @@ face* detectAndDraw( Mat& img, CascadeClassifier& cascade, CascadeClassifier& ne
 			Faces[person].x = center.x;
 			Faces[person].y = center.y;
 			Faces[person].r = radius;
+			//return Faces;
 			//ROS_INFO("-------------\n%d %d %d %d\n\n",Faces[i].fid,Faces[i].x,Faces[i].y,Faces[i].r);
 			
 		}
 	}
 
 	occlusion = 1;
-
-	return Faces;
+//}
+	return /*;*/Faces;
 
 }
 

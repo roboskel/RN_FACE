@@ -7,10 +7,12 @@ import struct
 import rn_face.msg
 
 class head_cords_m_array(genpy.Message):
-  _md5sum = "389fffe2ce004da6b2e2a56f91e2a9c5"
+  _md5sum = "9d83595c9240cc8fe9fe29aba471430a"
   _type = "rn_face/head_cords_m_array"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """head_cords_m[] head_co
+int32 no_faces
+
 
 ================================================================================
 MSG: rn_face/head_cords_m
@@ -21,8 +23,8 @@ float64 y
 float64 z
 
 """
-  __slots__ = ['head_co']
-  _slot_types = ['rn_face/head_cords_m[]']
+  __slots__ = ['head_co','no_faces']
+  _slot_types = ['rn_face/head_cords_m[]','int32']
 
   def __init__(self, *args, **kwds):
     """
@@ -32,7 +34,7 @@ float64 z
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       head_co
+       head_co,no_faces
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -43,8 +45,11 @@ float64 z
       #message fields cannot be None, assign default values for those that are
       if self.head_co is None:
         self.head_co = []
+      if self.no_faces is None:
+        self.no_faces = 0
     else:
       self.head_co = []
+      self.no_faces = 0
 
   def _get_types(self):
     """
@@ -63,6 +68,7 @@ float64 z
       for val1 in self.head_co:
         _x = val1
         buff.write(_struct_2q3d.pack(_x.timestamp, _x.id, _x.x, _x.y, _x.z))
+      buff.write(_struct_i.pack(self.no_faces))
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -86,6 +92,9 @@ float64 z
         end += 40
         (_x.timestamp, _x.id, _x.x, _x.y, _x.z,) = _struct_2q3d.unpack(str[start:end])
         self.head_co.append(val1)
+      start = end
+      end += 4
+      (self.no_faces,) = _struct_i.unpack(str[start:end])
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e) #most likely buffer underfill
@@ -103,6 +112,7 @@ float64 z
       for val1 in self.head_co:
         _x = val1
         buff.write(_struct_2q3d.pack(_x.timestamp, _x.id, _x.x, _x.y, _x.z))
+      buff.write(_struct_i.pack(self.no_faces))
     except struct.error as se: self._check_types(se)
     except TypeError as te: self._check_types(te)
 
@@ -127,9 +137,13 @@ float64 z
         end += 40
         (_x.timestamp, _x.id, _x.x, _x.y, _x.z,) = _struct_2q3d.unpack(str[start:end])
         self.head_co.append(val1)
+      start = end
+      end += 4
+      (self.no_faces,) = _struct_i.unpack(str[start:end])
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e) #most likely buffer underfill
 
 _struct_I = genpy.struct_I
+_struct_i = struct.Struct("<i")
 _struct_2q3d = struct.Struct("<2q3d")

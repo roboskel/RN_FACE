@@ -62,8 +62,7 @@ struct head_cords
 
 void callback(const std_msgs::Float64::ConstPtr& msg)
 {
-    float start = msg->data;
-     //START gia na 3ekinhsei to record
+    float start = msg->data; //START gia na 3ekinhsei to record
 		//X gia na stamathsei
     //printf("Press Start to Start Recording \n");
     ROS_INFO("STARTED SKEL REC");
@@ -101,6 +100,7 @@ int main (int argc, char** argv)
 	int i ;
 	int rec[6]={0,0,0,0,0,0};
 	int no_faces=0;
+	//head_cords heads ;
 	while (node.ok())
 	{	
 		//ros::Duration(0.01).sleep();
@@ -108,8 +108,10 @@ int main (int argc, char** argv)
 		//ROS_INFO("IN WHILE");
 		skel_cur_time=ros::Time::now();
 		seconds=skel_cur_time.toSec()-skel_last_time.toSec();
+		//if ((REC==1)&&(seconds>0.2))
 		if(true)
-		{	
+		{	//ROS_INFO("BEFORE CALL");
+			//send_transforms(/*node*/);
 			//ROS_INFO("STARTED");
 		no_faces=0;		
 		p1 = std::chrono::system_clock::now();
@@ -135,7 +137,10 @@ int main (int argc, char** argv)
 					//printf("X:%f  Y:%f   Z:%f",origin.x(),origin.y(),origin.z());
 					ros::Duration(1).sleep();
 					//ROS_INFO("TRY");
+					
+					//file<<skel_ts<<" "<<i<<" ";
 					//ros::Duration(1).sleep();
+					//if ((cord.x!=heads.x_prev[i-1])&&(cord.y!=heads.y_prev[i-1])&&(cord.z!=heads.z_prev[i-1]))
 					if ((heads.x[i-1]!=heads.x_prev[i-1])&&(heads.y[i-1]!=heads.y_prev[i-1])&&(heads.z[i-1]!=heads.z_prev[i-1]))
 					{
 						//ROS_INFO("IF");
@@ -145,21 +150,36 @@ int main (int argc, char** argv)
 						heads.z_prev[i-1] = heads.z[i-1];
 						no_faces++;
 						//ros::Duration(1).sleep();
+						//file<<heads.x[i-1]<<" "<<heads.y[i-1]<<" "<<" "<<heads.z[i-1]<<" ";
 					}
 					else
 					{	//ROS_INFO("ELSE");
+						//heads.x[i-1]=0;
+						//heads.y[i-1]=0;
+						//heads.z[i-1]=0;
 						heads.x_prev[i-1] = heads.x[i-1];
 						heads.y_prev[i-1] = heads.y[i-1];
 						heads.z_prev[i-1] = heads.z[i-1];
 						rec[i-1]=0;
 						//ros::Duration(1).sleep();
+						//file<<heads.x[i-1]<<" "<<heads.y[i-1]<<" "<<heads.z[i-1]<<" ";
 
 					}
 				}
 				catch (tf::TransformException ex)
 				{
 					//ROS_INFO("CATCH");
+					//ros::Duration(1).sleep();
+					//ros::shutdown();
 					rec[i-1]=0;
+					//heads.fid=1337;
+					//heads.x[i-1]=0;
+					//heads.y[i-1]=0;
+					//heads.z[i-1]=0;
+					//heads.x_prev[i-1]=0;
+					//heads.y_prev[i-1]=0;
+					//heads.z_prev[i-1]=0;
+					
 				}
 				if(rec[i-1]==0)
 				{
@@ -169,6 +189,7 @@ int main (int argc, char** argv)
 					msg.y=0;
 					msg.z=0;
 				}
+				//file<<endl;
 				else
 				{
 				msg.timestamp=stol(skel_ts);
@@ -188,7 +209,8 @@ int main (int argc, char** argv)
 		  skel_ts.clear();
 		  sstream2.str(std::string());
 		  sstream2.clear();
-		//ROS_INFO("AFTER CALL");
+		  //msg_ar.clear();
+			//ROS_INFO("AFTER CALL");
 		}
 		skel_last_time=skel_cur_time;
 		//ROS_INFO("OUTSIDE LOOP");

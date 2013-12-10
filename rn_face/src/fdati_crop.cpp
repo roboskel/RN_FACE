@@ -1,6 +1,5 @@
 // g++ `pkg-config --cflags opencv`   `pkg-config --libs opencv` face_detection_and_tracking.cpp -o face_detection_and_tracking
 #include <stdlib.h>
-
 #include <stdio.h>
 #include <time.h>
 #include <iostream>
@@ -8,21 +7,18 @@
 #include <fstream>
 #include <math.h>
 #include <cmath>
-#include <ros/ros.h>
+
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-
-
+//#include "opencv2/cv.h"
 #include "cv.h"
-#include "highgui.h"
+#include <opencv2/imgproc/imgproc.hpp> 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+
 #include <stdio.h>
 #include <ctype.h>
 
@@ -30,10 +26,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <ros/ros.h>
 #include "std_msgs/Float64MultiArray.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Int64.h"
 #include "std_msgs/Int32.h"
+#include <sensor_msgs/image_encodings.h>
 #include "rn_face/head_cords_m.h"
 #include "rn_face/head_cords_m_array.h"
 
@@ -195,16 +193,7 @@ void box_area(double x,double y, double z,int &py, int &pz, int &width, int &hei
 		tempy = 319 + (-y/x)*640;
 	}
 	py = static_cast<int>(tempy+0.5)-90;
-	/*
-	if (z > 0)
-	{
-		tempz = 239 - ((z)/x)*480;
-	}
-	else
-	{
-		tempz = 239 + (-z/x)*480;
-	}
-	*/ 
+	 
 	pz = 50;//80/*static_cast<int>(tempz+0.5)-90*/;
 	width = WIDTH;
 	height = HEIGHT;

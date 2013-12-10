@@ -7,12 +7,10 @@
 #include "std_msgs/Float64MultiArray.h"
 #include <cmath>
 #include <math.h>
-#include "/home/skel/roboskel_workspace/sandbox/robot_skel/sdc2130_skel/src/robodev.cpp"
-#include <sdc2130_skel/RoboteqDevice.h>
-#include <sdc2130_skel/ErrorCodes.h>
-#include <sdc2130_skel/Constants.h>
-
-#include "sdc2130_skel/teleop_skel.h"
+#include <RoboteqDevice.cpp>
+//#include <RoboteqDevice.h>
+//#include <ErrorCodes.h>
+//#include <Constants.h>
 
 #define PI 3.14159265358979323846264338
 #define DIAMETER 15.24
@@ -109,11 +107,15 @@ void chatterCallback(const sensor_msgs::Joy::ConstPtr& msg)
 		else if(msg->axes[5]==1)//Left Button
 		{	
 			ROS_INFO("*********");
+			ROS_INFO("Connecting To Wireless");
+			system("./home/skel/con_w.sh");
+			sleep(5);
 			ROS_INFO("*********");
 		}
 		else if(msg->axes[5]==-1)
 		{
 			ROS_INFO("*********");//Right Button
+			ROS_INFO("Connecting To Ethernet");
 			ROS_INFO("*********");
 		}
 		else if(msg->axes[6]==1)
@@ -164,10 +166,26 @@ void chatterCallback(const sensor_msgs::Joy::ConstPtr& msg)
 
 int main(int argc, char* argv[])
 {	
+	/*
+	int status = device.Connect("/dev/ttyACM1");
+	if(status != RQ_SUCCESS)
+	{
+		cout<<"Error connecting to device: "<<status<<"."<<endl;
+		return 1;
+	}
+	//device.SetConfig(_RWD, 1, 1000);
+	//device.SetConfig(_RWD, 2, 1000);
+	device.SetConfig(_RWD, 1, -1);
+	device.SetConfig(_RWD, 2, -1);
+	*/
+	
 	ros::init(argc, argv, "controller");
 	ros::NodeHandle nh;
 	ros::Rate loop_rate(1000);
 	ros::Subscriber gp_in =nh.subscribe("joy", 1, chatterCallback);
+	//printf( "Transmitting Gamepad Output\n");
+	//ros::Publisher teleop_pub = nh.advertise<teleop_skel::teleop_skel>("skel_teleop", 1);
+	//ros::Publisher teleop_pub = nh.advertise<std_msgs::Float64MultiArray>("g", 1);
 	/*
 	ROS_INFO("Waiting For Input");
 	ROS_INFO("Face Tracking Options");
@@ -179,6 +197,25 @@ int main(int argc, char* argv[])
 	ROS_INFO("Square : Shut Down Openni_Launch");
 	ROS_INFO("Right Bumper (R1) : Delete Recorded Images");
 	ROS_INFO("Right Trigger (R2) : Shut Down Remote Control Node");
+	
+	
+	ROS_INFO("- SetConfig(_DINA, 1, 1)...");
+    if((status = device.SetConfig(_DINA, 1, 1)) != RQ_SUCCESS)
+      cout<<"failed --> "<<status<<endl;
+    else
+      ROS_INFO("succeeded.");
+    ros::Duration(0.01).sleep(); //sleep for 10 ms
+
+    int result;
+    
+    ROS_INFO("- GetConfig(_DINA, 1)...");
+    if((status = device.GetConfig(_DINA, 1, result)) != RQ_SUCCESS)
+      cout<<"failed --> "<<status<<endl;
+    else
+      cout<<"returned --> "<<result<<endl;
+    ROS_INFO("Roboteq -- Successfull setup of the Roboteq SDC2130");
+    printf ("Sek Operational\n\n");
+    ros::Duration(0.01).sleep(); //sleep for 10 ms
 	*/
 	while (ros::ok())
 		{
